@@ -1,0 +1,25 @@
+name: HideNSeek
+main: HideNSeek\Loader
+version: 0.0.1
+api: 1.10.0
+author: MinePocket Team
+load: STARTUP
+depend:
+  - GamesCore
+
+commands:
+    sethnsspawnpoint:
+        description: "too lazy to write"
+        permission: hidenseek.sethnssp
+
+permissions:
+    hidenseek:
+        description: "Allow access to everything"
+        default: op
+        children:
+            hidenseek.block:
+                description: "Smth"
+                default: op
+            hidenseek.sethnssp:
+                description: "Alele"
+                default: op
