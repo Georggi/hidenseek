@@ -76,7 +76,7 @@ class HNSSession extends BaseSession{
     /**
      * @param bool $mode
      */
-    public function setHidden($mode){
+    public function setHidden($mode, $pause = false){
         $this->isHidden = $mode;
         if($mode){
             if ($this->hasSelectedBlock){
@@ -90,14 +90,14 @@ class HNSSession extends BaseSession{
             } else{
                 $meta = 0;
             }
-            parent::startDisguise(66, ["TileID" => $id, "Data" => $meta]);
+            $this->getPlayer()->startDisguise(66, ["TileID" => $id, "Data" => $meta]);
             $this->id = $id;
             $this->meta = $meta;
             $this->isBlock = false;
         }
         if(!$mode){
-            if($this->isDisguised() !== NULL){
-                $this->stopDisguise(false, true);
+            if($this->getPlayer()->isDisguised() !== NULL){
+                $this->getPlayer()->stopDisguise($pause, true);
             }
         }
     }
@@ -127,7 +127,7 @@ class HNSSession extends BaseSession{
             $player->getLevel()->setBlock(new Vector3($this->getBlock()->getFloorX(), $this->getBlock()->getFloorY(), $this->getBlock()->getFloorZ()), new Block(0), true, false);
             $this->block = false;
             $this->setPlaced(false);
-            $this->startDisguise(66, ["TileID" => $this->getID(), "Data" => $this->getMeta()]);
+            $this->getPlayer()->startDisguise(66, ["TileID" => $this->getID(), "Data" => $this->getMeta()]);
         }
     }
 	

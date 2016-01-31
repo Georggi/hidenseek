@@ -40,7 +40,7 @@ class HNSGame extends BaseMiniGame{
 
     public function __construct($core, $plugin, Level $level, Sign $sign){
         // Loader, MinigameProject, Level, Sign, maximum players, minimum players, time of game, number of rounds, ??, game end message
-        parent::__construct($core, $plugin, $level, $sign, 20, 2, 5, 1, false);
+        parent::__construct($core, $plugin, $level, $sign, 1, 1, 1, 1, false);
     }
 
     /**
@@ -200,7 +200,7 @@ class HNSGame extends BaseMiniGame{
             $this->setPlaced($player, true);
             $this->id = $this->getBlock($player)->getId();
             $this->meta = $this->getBlock($player)->getDamage();
-            $this->getSession($player)->stopDisguise(true, false);
+            $this->getSession($player)->setHidden(false, true);
         }else{
             $player->sendMessage("You can't become block there!");
         }
@@ -355,7 +355,7 @@ class HNSGame extends BaseMiniGame{
             }
             if($this->getSession($victim)->isHidden()){ // Pass the damage to the player instead of the block entity
                 $victim->attack($event->getFinalDamage(), $event);
-                $victim->knockBack($damager, $event->getFinalDamage(), $damager->getX(), $damager->getY());
+                //$victim->knockBack($damager, $event->getFinalDamage(), $damager->getX(), $damager->getY());
                 $event->setDamage(0);
             }
         }
