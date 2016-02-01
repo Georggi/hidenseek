@@ -2,7 +2,7 @@ name: HideNSeek
 main: HideNSeek\Loader
 version: 0.0.1
 api: 1.10.0
-author: MinePocket Team
+author: Project-MU Team
 load: STARTUP
 depend:
   - GamesCore
