@@ -15,6 +15,7 @@ use GamesCore\GamesPlayer;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\player\PlayerInteractEvent;
+use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\player\PlayerRespawnEvent;
@@ -125,7 +126,8 @@ class HNSGame extends BaseMiniGame{
     /**
      * @param GamesPlayer $player
      */
-    public function onPlayerJoin( GamesPlayer $player ) {}
+    public function onPlayerJoin( GamesPlayer $player ) {
+	}
 
     /**
      * @return HNSSession[]
