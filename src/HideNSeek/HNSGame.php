@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) Yuriy Shnitkovskiy and Jorge Gonzalez, 2016. Hide N Seek Plugin for PocketMine by Yuriy Shnitkovskiy and Jorge Gonzalez is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License.
+ * Copyright(c) Yuriy Shnitkovskiy and Jorge Gonzalez, 2016. Hide N Seek Plugin for PocketMine by Yuriy Shnitkovskiy and Jorge Gonzalez is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License.
  * To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-nd/4.0/.
  * Attribution — You must give appropriate credit, provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.
  * NonCommercial — You may not use the material for commercial purposes.
@@ -10,12 +10,10 @@
 namespace HideNSeek;
 
 use GamesCore\BaseFiles\BaseMiniGame;
-use GamesCore\BaseFiles\BaseSession;
 use GamesCore\GamesPlayer;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\player\PlayerInteractEvent;
-use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\player\PlayerRespawnEvent;
@@ -26,13 +24,10 @@ use pocketmine\block\Block;
 use pocketmine\item\Item;
 use pocketmine\utils\TextFormat;
 use pocketmine\math\Vector3;
-use pocketmine\event\entity\EntityBlockChangeEvent;
 use HideNSeek\Inventories\Hider;
 use HideNSeek\Inventories\Seeker;
 
 class HNSGame extends BaseMiniGame{
-    /** @var Loader */
-    private $plugin;
     /** @var GamesPlayer */
     private $lastHider;
     /** @var Vector3 */
@@ -43,7 +38,9 @@ class HNSGame extends BaseMiniGame{
         "1:0",
         "3:0"
     ];
-    private $HidersSpawnPoint;
+	/** @var array */
+	private $blockSelection = [];
+    //private $HidersSpawnPoint;
 
 
     public function __construct($core, $plugin, Level $level, Sign $sign){
@@ -54,7 +51,7 @@ class HNSGame extends BaseMiniGame{
 	/**
 	 * @return \GamesCore\BaseFiles\MiniGameProject
 	 */
-	public function getPlugin() {
+	public function getPlugin(){
 		return parent::getPlugin();
 	}
 
@@ -66,12 +63,12 @@ class HNSGame extends BaseMiniGame{
         $seeker = $this->getAllPlayers()[array_rand($this->getAllPlayers())];
         $this->getSession($seeker)->setHidden(false);
         $seeker->addWindow(new Seeker($seeker));
-        foreach($this->getAllPlayers() as $hider){
-            if($this->getSession($hider)->isHidden() === NULL){
-                $this->getSession($hider)->setHidden(true);
-                $hider->addWindow(new Hider($hider));
-            }
-        }
+		foreach($this->getAllPlayers() as $p){
+			if($this->getSession($p)->isHidden() === null){
+				$this->getSession($p)->setHidden(true);
+				$p->addWindow(new Hider($p));
+			}
+		}
     }
 
     public function onGameEnd(){
@@ -87,7 +84,7 @@ class HNSGame extends BaseMiniGame{
                 $Seekers[] = $s->getPlayer();
             }
 
-            /*foreach($this->getPlugin()->getServer()->getDefaultLevel()->getPlayers() as $p) {
+            /*foreach($this->getPlugin()->getServer()->getDefaultLevel()->getPlayers() as $p){
                 // Show the current players to all the players in the lobby...
                 if(!$this->getCore()->getCore()->isMagicClockEnabled($p)){
                     $p->showPlayer($s->getPlayer());
@@ -106,7 +103,7 @@ class HNSGame extends BaseMiniGame{
         // Reward seekers players
         foreach($Seekers as $s){
             $reward = 3;
-            if(count($Hiders) < 1 && ($this->lastHider instanceof GamesPlayer && $s === $this->lastHider)){
+            if(count($Hiders) < 1 &&($this->lastHider instanceof GamesPlayer && $s === $this->lastHider)){
                 $reward = 5;
             }
             //$this->getCore()->getCore()->addPlayerCoins($s, $reward);
@@ -122,116 +119,73 @@ class HNSGame extends BaseMiniGame{
     /**
      * @param GamesPlayer $player
      */
-    public function onPlayerJoin( GamesPlayer $player ) {
+    public function onPlayerJoin(GamesPlayer $player){
+	}
+
+	/**
+	 * @param GamesPlayer $player
+	 * @param Block $block
+	 */
+	public function selectBlock(GamesPlayer $player, Block $block){
+		$this->blockSelection[$player->getId()] = [$block->getId(), $block->getDamage()];
 	}
 
     /**
      * @return HNSSession[]
      */
-    public function getAllSessions() {
+    public function getAllSessions(){
         return parent::getAllSessions();
     }
 
-    /**
-     * @param GamesPlayer $player
-     * @return BaseSession
-     */
-    public function generateSession( GamesPlayer $player ) {
-        return new HNSSession( $player, $this );
+	/**
+	 * @param GamesPlayer $player
+	 * @return HNSSession
+	 */
+    public function generateSession(GamesPlayer $player){
+		$block = isset($this->blockSelection[$player->getId()]) ? $this->blockSelection[$player->getId()] : explode(":", $this->getMapBlocks()[array_rand($this->getMapBlocks())]);
+		$blockId = $block[0];
+		$blockMeta = $block[1];
+
+        return new HNSSession($player, $this, $blockId, $blockMeta);
     }
 
     /**
      * @param GamesPlayer $player
      * @return bool|HNSSession
      */
-    public function getSession( GamesPlayer $player ) {
-        return parent::getSession( $player );
-    }
-
-    /**
-     * @param GamesPlayer $player
-     * @return bool
-     */
-    public function isPlaced( GamesPlayer $player ) {
-        return $this->getSession( $player )->isPlaced();
-    }
-
-    /**
-     * @param GamesPlayer $player
-     * @return int
-     */
-    public function getID( GamesPlayer $player ) {
-        return $this->getSession( $player )->getID();
-    }
-
-    /**
-     * @param GamesPlayer $player
-     * @return int
-     */
-    public function getMeta( GamesPlayer $player ) {
-        return $this->getSession( $player )->getMeta();
-    }
-
-    /**
-     * @param GamesPlayer $player
-     * @param $mode
-     */
-    public function setPlaced( GamesPlayer $player, $mode ) {
-        $this->getSession( $player )->setPlaced( $mode );
+    public function getSession(GamesPlayer $player){
+        return parent::getSession($player);
     }
 
     /**
      * @return array
      */
-    public function getMapBlocks() {
+    public function getMapBlocks(){
         return $this->blocks;
     }
-
-    /**
-     * @param GamesPlayer $player
-     */
-    public function placeBlock( GamesPlayer $player ) {
-        if ( in_array( $player->getLevel()->getBlock( $player->getPosition())->getId(), [ 0, 8, 9 ] ) ) {
-            $player->getLevel()->setBlock( $player->getPosition()/*->add(0, 5)*/ , $this->getBlock( $player ), true, false );
-            // This allow to place the entity in the right position, added a "Y axis" trick at the end of the function to correct the position in "slabs" xD
-            $this->setPlaced( $player, true );
-            $this->id = $this->getBlock( $player )->getId();
-            $this->meta = $this->getBlock( $player )->getDamage();
-            $this->getSession( $player )->setHidden( false, true );
-        } else {
-            $player->sendMessage( "You can't become block there!" );
-        }
-    }
-
-	/**
-	 * @param GamesPlayer $player
-	 */
-	public function removeBlock( GamesPlayer $player ) {
-		$this->getSession( $player )->removeBlock( $player );
-	}
 
 
     /**
      * @param GamesPlayer $player
      * @return bool|Block
      */
-    public function getBlock( GamesPlayer $player ) {
-        return $this->getSession( $player )->getBlock();
+    public function getBlock(GamesPlayer $player){
+        return $this->getSession($player)->getBlock();
     }
 
     /**
      * @param GamesPlayer $player
      * @return bool
      */
-    public function isHidden( GamesPlayer $player ) {
-        return $this->getSession( $player )->isHidden();
+    public function isHidden(GamesPlayer $player){
+        return $this->getSession($player)->isHidden();
     }
 
     /**
      * @param GamesPlayer $player
      */
-    public function setSeeker( GamesPlayer $player ) {
-        $this->getSession( $player )->setHidden( false, false );
+    public function setSeeker(GamesPlayer $player){
+        $this->getSession($player)->setHidden(false);
     }
 
     /**
@@ -246,44 +200,12 @@ class HNSGame extends BaseMiniGame{
      * @param Item $item
      * @param GamesPlayer $player
      */
-    public function sendDamageToPlayer( Item $item, GamesPlayer $player ) {
+    public function sendDamageToPlayer(Item $item, GamesPlayer $player){
         $damage = [
-            EntityDamageEvent::MODIFIER_BASE => isset( $this->damageTable[ $item->getId() ] ) ? $this->damageTable[ $item->getId() ] : 1
+            EntityDamageEvent::MODIFIER_BASE => isset($this->damageTable[ $item->getId() ]) ? $this->damageTable[ $item->getId() ] : 1
         ];
-        new EntityDamageEvent( $player, "Ponies", $damage[ 0 ] );
+        new EntityDamageEvent($player, "Ponies", $damage[ 0 ]);
     }
-
-    /**
-     * Change the last time that a player moved
-     *
-     * @param GamesPlayer $player
-     * @param int $time
-     */
-    public function setLastPlayerMovement( GamesPlayer $player, $time ) {
-        if ( $this->isHidden( $player ) ) {
-            $this->getSession( $player )->setLastMovement( $time );
-        }
-    }
-
-    /**
-     * Get the last time that a player moved
-     *
-     * @param GamesPlayer $player
-     * @return int|null
-     */
-    public function getLastPlayerMovement( GamesPlayer $player ) {
-        if ( $this->isHidden( $player ) ) {
-            return $this->getSession( $player )->getLastMovement();
-		} else {
-            return true;
-        }
-    }
-
-    /** @var int */
-    private $id;
-
-    /** @var int */
-    private $meta;
 
     /*  _______________________________
      * | ______               _        |
@@ -297,21 +219,17 @@ class HNSGame extends BaseMiniGame{
 
     /**
      * @param PlayerInteractEvent $event
+	 *
+	 * @priority MONITOR
      */
-    public function onPlayerInteract( PlayerInteractEvent $event ) {
-		if ( $this->validEvent( $event ) ) {
+    public function onPlayerInteract(PlayerInteractEvent $event){
+		if($this->validEvent($event)){
 			/** @var GamesPlayer $player */
 			$player = $event->getPlayer();
-			foreach( $this->getAllPlayers() as $p ){
-				if  ( $p !== $player &&
-					( $this->isHidden( $player ) === false ) &&
-					( $this->isHidden( $p ) === true ) &&
-					$event->getBlock()->getFloorX() === $this->getBlock( $p )->getFloorX() &&
-					$event->getBlock()->getFloorY() === $this->getBlock( $p )->getFloorY() &&
-					$event->getBlock()->getFloorZ() === $this->getBlock( $p )->getFloorZ()
-				) {
-					$this->sendDamageToPlayer( $event->getItem(), $p );
-				}
+			$block = $event->getBlock();
+			if($block instanceof HNSBlock){
+				$this->getCore()->getServer()->getPluginManager()->callEvent($ev = new EntityDamageByEntityEvent($player, $block->getOwner(), EntityDamageByEntityEvent::CAUSE_CONTACT, 1));
+				$block->getOwner()->attack($ev->getDamage(), $ev);
 			}
 		}
 	}
@@ -319,16 +237,12 @@ class HNSGame extends BaseMiniGame{
     /**
      * @param PlayerMoveEvent $event
      */
-    public function onPlayerMove( PlayerMoveEvent $event ) {
-		if ( $this->validEvent( $event ) ) {
+    public function onPlayerMove(PlayerMoveEvent $event){
+		if($this->validEvent($event)){
 			/** @var GamesPlayer $player */
 			$player = $event->getPlayer();
-			if ( $this->isPlaced( $player ) && $player->distance( new Vector3(
-					$this->getBlock( $player )->getX(),
-					$this->getBlock( $player )->getY(),
-					$this->getBlock( $player )->getZ() ) ) > 1
-			) {
-				$this->getSession( $player )->removeBlock( $player );
+			if($this->getSession($player)->isBlock()){
+				$this->getSession($player)->getBlock()->onUpdate();
 			}
 		}
     }
@@ -337,18 +251,16 @@ class HNSGame extends BaseMiniGame{
      * @param EntityDamageEvent $event
 	 * @priority HIGHEST
      */
-    public function onEntityDamage( EntityDamageEvent $event ) {
-		if ( $this->validEvent( $event ) ) {
-			if ( $event instanceof EntityDamageByEntityEvent ) {
-				/** @var GamesPlayer $damager */
-				$damager = $event->getDamager();
-				/** @var GamesPlayer $victim */
-				$victim = $event->getEntity();
-				if ( $this->getSession( $victim )->isHidden() === $this->getSession( $damager )->isHidden() ) {
-					$event->setCancelled(); // Cancel the event if both players are from the same team (Hiders or seekers)
-				} elseif ( $this->getSession( $victim )->isHidden() && !$this->getSession( $damager )->isHidden() ) {
-					$this->getSession( $victim )->setHidden( true );
-				}
+    public function onEntityDamage(EntityDamageEvent $event){
+		if($this->validEvent($event) && $event instanceof EntityDamageByEntityEvent){
+			/** @var GamesPlayer $damager */
+			$damager = $event->getDamager();
+			/** @var GamesPlayer $victim */
+			$victim = $event->getEntity();
+			if($this->getSession($victim)->isHidden() === $this->getSession($damager)->isHidden()){
+				$event->setCancelled(); // Cancel the event if both players are from the same team(Hiders or seekers)
+			}elseif($this->getSession($victim)->isHidden() && !$this->getSession($damager)->isHidden()){
+				$this->getSession($victim)->setHidden(true);
 			}
 		}
     }
@@ -356,14 +268,14 @@ class HNSGame extends BaseMiniGame{
     /**
      * @param PlayerRespawnEvent $event
      */
-    public function onPlayerRespawn( PlayerRespawnEvent $event ) {
-		if ( $this->validEvent( $event ) ) {
-			$event->setRespawnPosition( $this->getRandomSpawnPoint() );
+    public function onPlayerRespawn(PlayerRespawnEvent $event){
+		if($this->validEvent($event)){
+			$event->setRespawnPosition($this->getRandomSpawnPoint());
 			/** @var GamesPlayer $player */
 			$player = $event->getPlayer();
-			$player->setPosition( $this->SeekersSpawnPoint );
-			if ( $this->getSession( $player )->isHidden() ) {
-				$this->getSession( $player )->setHidden( false );
+			$player->setPosition($this->SeekersSpawnPoint);
+			if($this->getSession($player)->isHidden()){
+				$this->getSession($player)->setHidden(false);
 				$this->lastHider = $player;
 			}
 		}
@@ -372,31 +284,22 @@ class HNSGame extends BaseMiniGame{
     /**
      * @param PlayerQuitEvent $event
      */
-    public function onPlayerQuit( PlayerQuitEvent $event ) {
-		if ( $this->validEvent( $event ) ) {
+    public function onPlayerQuit(PlayerQuitEvent $event){
+		if($this->validEvent($event)){
 			/** @var GamesPlayer $player */
 			$player = $event->getPlayer();
-			$this->getSession( $player )->setHidden( false, false, false );
-			$this->removePlayer( $player );
-			$this->broadcastMessage( $event->getPlayer()->getName() . " left the game" );
+			$this->getSession($player)->setHidden(false);
+			$this->removePlayer($player);
+			$this->broadcastMessage($event->getPlayer()->getName() . " left the game");
 		}
     }
 
-    /**
-     * @param EntityBlockChangeEvent $event
-     */
-    public function onFallingSandConvert( EntityBlockChangeEvent $event ) {
-        $event->setCancelled();
-    }
-
-	public function onPlayerSneak( PlayerToggleSneakEvent $event ) {
-		if ( $this->validEvent( $event ) ) {
+	public function onPlayerSneak(PlayerToggleSneakEvent $event){
+		if($this->validEvent($event)){
 			/** @var GamesPlayer $player */
 			$player = $event->getPlayer();
-			if ( $this->getSession( $player )->isHidden() && $event->isSneaking() ) {
-				$this->placeBlock( $player );
-			} elseif ( $this->getSession( $player )->isHidden() && !$event->isSneaking() ) {
-				$this->removeBlock( $player );
+			if(!$event->isCancelled() && $this->getSession($player)->isHidden()){
+				$this->getSession($player)->getBlock()->setVanished(!$event->isSneaking());
 			}
 		}
 	}
