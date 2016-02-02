@@ -48,7 +48,7 @@ class HNSGame extends BaseMiniGame{
 
     public function __construct($core, $plugin, Level $level, Sign $sign){
         // Loader, MinigameProject, Level, Sign, maximum players, minimum players, time of game, number of rounds, ??, game end message
-        parent::__construct($core, $plugin, $level, $sign, 1, 1, 1, 1, false);
+        parent::__construct($core, $plugin, $level, $sign, 10, 2, 5, 1, false);
     }
 
 	/**
