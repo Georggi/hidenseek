@@ -51,14 +51,10 @@ class HNSGame extends BaseMiniGame{
         parent::__construct($core, $plugin, $level, $sign, 1, 1, 1, 1, false);
     }
 
-    /**
-     * @return Loader
-     */
-    public function getPlugin(){
-        return $this->plugin;
-    }
-
-	public function getGamePlugin() {
+	/**
+	 * @return \GamesCore\BaseFiles\MiniGameProject
+	 */
+	public function getPlugin() {
 		return parent::getPlugin();
 	}
 
@@ -303,59 +299,57 @@ class HNSGame extends BaseMiniGame{
      * @param PlayerInteractEvent $event
      */
     public function onPlayerInteract( PlayerInteractEvent $event ) {
-		if ( !$this->validEvent( $event ) ) {
-			$event->setCancelled();
+		if ( $this->validEvent( $event ) ) {
+			/** @var GamesPlayer $player */
+			$player = $event->getPlayer();
+			foreach( $this->getAllPlayers() as $p ){
+				if  ( $p !== $player &&
+					( $this->isHidden( $player ) === false ) &&
+					( $this->isHidden( $p ) === true ) &&
+					$event->getBlock()->getFloorX() === $this->getBlock( $p )->getFloorX() &&
+					$event->getBlock()->getFloorY() === $this->getBlock( $p )->getFloorY() &&
+					$event->getBlock()->getFloorZ() === $this->getBlock( $p )->getFloorZ()
+				) {
+					$this->sendDamageToPlayer( $event->getItem(), $p );
+				}
+			}
 		}
-		/** @var GamesPlayer $player */
-        $player = $event->getPlayer();
-        foreach( $this->getAllPlayers() as $p ){
-            if  ( $p !== $player &&
-                ( $this->isHidden( $player ) === false ) &&
-                ( $this->isHidden( $p ) === true ) &&
-                $event->getBlock()->getFloorX() === $this->getBlock( $p )->getFloorX() &&
-                $event->getBlock()->getFloorY() === $this->getBlock( $p )->getFloorY() &&
-                $event->getBlock()->getFloorZ() === $this->getBlock( $p )->getFloorZ()
-            ) {
-                $this->sendDamageToPlayer( $event->getItem(), $p );
-            }
-        }
-
-    }
+	}
 
     /**
      * @param PlayerMoveEvent $event
      */
     public function onPlayerMove( PlayerMoveEvent $event ) {
-		if ( !$this->validEvent( $event ) ) {
-			$event->setCancelled();
+		if ( $this->validEvent( $event ) ) {
+			/** @var GamesPlayer $player */
+			$player = $event->getPlayer();
+			if ( $this->isPlaced( $player ) && $player->distance( new Vector3(
+					$this->getBlock( $player )->getX(),
+					$this->getBlock( $player )->getY(),
+					$this->getBlock( $player )->getZ() ) ) > 1
+			) {
+				$this->getSession( $player )->removeBlock( $player );
+			}
 		}
-		/** @var GamesPlayer $player */
-        $player = $event->getPlayer();
-        if ( $this->isPlaced( $player ) && $player->distance( new Vector3(
-                $this->getBlock( $player )->getX(),
-                $this->getBlock( $player )->getY(),
-                $this->getBlock( $player )->getZ() ) ) > 1
-        ) {
-            $this->getSession( $player )->removeBlock( $player );
-        }
     }
 
     /**
-     * @param EntityDamageByEntityEvent $event
+     * @param EntityDamageEvent $event
 	 * @priority HIGHEST
      */
-    public function onEntityDamage( EntityDamageByEntityEvent $event ) {
-		if ( !$this->validEvent( $event ) ) {
-			$event->setCancelled();
-		}
-		/** @var GamesPlayer $damager */
-		$damager = $event->getDamager();
-		/** @var GamesPlayer $victim */
-		$victim = $event->getEntity();
-		if ( $this->getSession( $victim )->isHidden() === $this->getSession( $damager )->isHidden() ) {
-            $event->setCancelled(); // Cancel the event if both players are from the same team (Hiders or seekers)
-        } elseif ( $this->getSession( $victim )->isHidden() && !$this->getSession( $damager )->isHidden() ) {
-			$this->getSession( $victim )->setHidden( true );
+    public function onEntityDamage( EntityDamageEvent $event ) {
+		if ( $this->validEvent( $event ) ) {
+			if ( $event instanceof EntityDamageByEntityEvent ) {
+				/** @var GamesPlayer $damager */
+				$damager = $event->getDamager();
+				/** @var GamesPlayer $victim */
+				$victim = $event->getEntity();
+				if ( $this->getSession( $victim )->isHidden() === $this->getSession( $damager )->isHidden() ) {
+					$event->setCancelled(); // Cancel the event if both players are from the same team (Hiders or seekers)
+				} elseif ( $this->getSession( $victim )->isHidden() && !$this->getSession( $damager )->isHidden() ) {
+					$this->getSession( $victim )->setHidden( true );
+				}
+			}
 		}
     }
 
@@ -363,53 +357,47 @@ class HNSGame extends BaseMiniGame{
      * @param PlayerRespawnEvent $event
      */
     public function onPlayerRespawn( PlayerRespawnEvent $event ) {
-		if ( !$this->validEvent( $event ) ) {
-			$event->setCancelled();
+		if ( $this->validEvent( $event ) ) {
+			$event->setRespawnPosition( $this->getRandomSpawnPoint() );
+			/** @var GamesPlayer $player */
+			$player = $event->getPlayer();
+			$player->setPosition( $this->SeekersSpawnPoint );
+			if ( $this->getSession( $player )->isHidden() ) {
+				$this->getSession( $player )->setHidden( false );
+				$this->lastHider = $player;
+			}
 		}
-        $event->setRespawnPosition( $this->getRandomSpawnPoint() );
-		/** @var GamesPlayer $player */
-        $player = $event->getPlayer();
-        $player->setPosition( $this->SeekersSpawnPoint );
-        if ( $this->getSession( $player )->isHidden() ) {
-            $this->getSession( $player )->setHidden( false );
-            $this->lastHider = $player;
-        }
     }
 
     /**
      * @param PlayerQuitEvent $event
      */
     public function onPlayerQuit( PlayerQuitEvent $event ) {
-		if ( !$this->validEvent( $event ) ) {
-			$event->setCancelled();
+		if ( $this->validEvent( $event ) ) {
+			/** @var GamesPlayer $player */
+			$player = $event->getPlayer();
+			$this->getSession( $player )->setHidden( false, false, false );
+			$this->removePlayer( $player );
+			$this->broadcastMessage( $event->getPlayer()->getName() . " left the game" );
 		}
-		/** @var GamesPlayer $player */
-        $player = $event->getPlayer();
-		$this->getSession( $player )->setHidden( false, false, false );
-        $this->removePlayer( $player );
-        $this->broadcastMessage( $event->getPlayer()->getName() . " left the game" );
     }
 
     /**
      * @param EntityBlockChangeEvent $event
      */
     public function onFallingSandConvert( EntityBlockChangeEvent $event ) {
-		if ( !$this->validEvent( $event ) ) {
-			$event->setCancelled();
-		}
         $event->setCancelled();
     }
 
 	public function onPlayerSneak( PlayerToggleSneakEvent $event ) {
-		if ( !$this->validEvent( $event ) ) {
-			$event->setCancelled();
-		}
-		/** @var GamesPlayer $player */
-		$player = $event->getPlayer();
-		if ( $this->getSession( $player )->isHidden() && $event->isSneaking() ) {
-			$this->placeBlock( $player );
-		} elseif ( $this->getSession( $player )->isHidden() && !$event->isSneaking() ) {
-			$this->removeBlock( $player );
+		if ( $this->validEvent( $event ) ) {
+			/** @var GamesPlayer $player */
+			$player = $event->getPlayer();
+			if ( $this->getSession( $player )->isHidden() && $event->isSneaking() ) {
+				$this->placeBlock( $player );
+			} elseif ( $this->getSession( $player )->isHidden() && !$event->isSneaking() ) {
+				$this->removeBlock( $player );
+			}
 		}
 	}
 }
