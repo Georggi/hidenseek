@@ -33,8 +33,18 @@ class Loader extends MiniGameProject {
 
 	}
 
+    /**
+     * @return string
+     */
     public function updaterName() {
         return "HideNSeek";
+    }
+    
+    /**
+     * @return array
+     */
+    public function getTranslations(){
+        return [];
     }
 
 	/**           _____ _____
