@@ -9,95 +9,104 @@
 
 namespace HideNSeek;
 
-use GamesCore\GamesPlayer;
 use GamesCore\BaseFiles\BaseSession;
+use GamesCore\GamesPlayer;
 use pocketmine\block\Block;
 
 /**
  * Class HNSSession
  * @package HideNSeek
  */
-class HNSSession extends BaseSession {
-    public function __construct(GamesPlayer $player, HNSGame $game, $blockId, $blockMeta){
-        parent::__construct($player, $game);
-        $this->id = $blockId;
-        $this->meta = $blockMeta;
-        $this->block = new HNSBlock($blockId, $blockMeta, $player);
-    }
+class HNSSession extends BaseSession
+{
+	/** @var bool */
+	private $isHidden;
+	/** @var int */
+	private $id;
+	/** @var int */
+	private $meta;
+	/** @var bool|Block */
+	private $block = false;
 
-    /**
-     * @return HNSGame
-     */
-    public function getGame() {
-        return parent::getGame();
-    }
+	public function __construct( GamesPlayer $player, HNSGame $game, $blockId, $blockMeta )
+	{
+		parent::__construct( $player, $game );
+		$this->id = $blockId;
+		$this->meta = $blockMeta;
+		$this->block = new HNSBlock( $blockId, $blockMeta, $player );
+	}
 
-    /** @var bool */
-    private $isHidden;
-    /** @var int */
-    private $id;
-    /** @var int */
-    private $meta;
+	/**
+	 * @return HNSGame
+	 */
+	public function getGame()
+	{
+		return parent::getGame();
+	}
 
-    /**
-     * @return int
-     */
-    public function getID() {
-        return $this->id;
-    }
+	/**
+	 * @return bool
+	 */
+	public function isBlock()
+	{
+		return $this->getBlock()->isVanished();
+	}
 
-    /**
-     * @return int
-     */
-    public function getMeta() {
-        return $this->meta;
-    }
+	/**
+	 * @return HNSBlock
+	 */
+	public function getBlock()
+	{
+		return $this->block;
+	}
 
-    /**
-     * @return bool
-     */
-    public function isBlock(){
-        return $this->getBlock()->isVanished();
-    }
+	/**
+	 * @param bool $mode
+	 */
+	public function setHidden( $mode )
+	{
+		$this->isHidden = $mode;
+		if ( $mode ) {
+			$this->getPlayer()->startDisguise( GamesPlayer::DISGUISE_ENTITY_FALLING_BLOCK, [ "TileID" => $this->getID(), "Data" => $this->getMeta() ] );
+		} else {
+			if ( $this->getPlayer()->isDisguised() ) {
+				$this->getPlayer()->stopDisguise();
+			}
+			$this->getBlock()->setVanished( false );
+		}
+	}
 
-    /**
-     * @return bool
-     */
-    public function isHidden() {
-        return $this->isHidden;
-    }
+	/**
+	 * @return int
+	 */
+	public function getID()
+	{
+		return $this->id;
+	}
 
-    /**
-     * @param bool $mode
-     */
-    public function setHidden($mode){
-        $this->isHidden = $mode;
-        if($mode){
-            $this->getPlayer()->startDisguise(GamesPlayer::DISGUISE_ENTITY_FALLING_BLOCK, ["TileID" => $this->getID(), "Data" => $this->getMeta()]);
-        }else{
-            if($this->getPlayer()->isDisguised()){
-                $this->getPlayer()->stopDisguise();
-            }
-            $this->getBlock()->setVanished(false);
-        }
-    }
+	/**
+	 * @return int
+	 */
+	public function getMeta()
+	{
+		return $this->meta;
+	}
 
-    /** @var bool|Block */
-    private $block = false;
+	public function onGameEnd()
+	{
+		if ( $this->isHidden() ) {
+			$this->getPlayer()->setDataFlag( GamesPlayer::DATA_FLAGS, GamesPlayer::DATA_FLAG_INVISIBLE, false );
+			$this->getPlayer()->setDataProperty( GamesPlayer::DATA_SHOW_NAMETAG, GamesPlayer::DATA_TYPE_BYTE, true );
+		}
+		$this->getPlayer()->removeAllEffects();
+		parent::onGameEnd();
+	}
 
-    /**
-     * @return HNSBlock
-     */
-    public function getBlock() {
-        return $this->block;
-    }
-
-    public function onGameEnd(){
-        if($this->isHidden()){
-            $this->getPlayer()->setDataFlag(GamesPlayer::DATA_FLAGS, GamesPlayer::DATA_FLAG_INVISIBLE, false);
-            $this->getPlayer()->setDataProperty(GamesPlayer::DATA_SHOW_NAMETAG, GamesPlayer::DATA_TYPE_BYTE, true);
-        }
-        $this->getPlayer()->removeAllEffects();
-        parent::onGameEnd();
-    }
+	/**
+	 * @return bool
+	 */
+	public function isHidden()
+	{
+		return $this->isHidden;
+	}
 }
