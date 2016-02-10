@@ -17,10 +17,8 @@ use pocketmine\item\Carrot;
 use pocketmine\item\Item;
 use pocketmine\item\WoodenSword;
 
-class Hider extends BaseInventory
-{
-	public function __construct( GamesPlayer $player )
-	{
+class Hider extends BaseInventory {
+	public function __construct( GamesPlayer $player ) {
 		parent::__construct( $player, [
 			new WoodenSword(),
 			new Bow(),

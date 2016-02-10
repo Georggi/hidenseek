@@ -17,10 +17,8 @@ use pocketmine\item\IronChestplate;
 use pocketmine\item\IronLeggings;
 use pocketmine\item\IronSword;
 
-class Seeker extends BaseInventory
-{
-	public function __construct( GamesPlayer $player )
-	{
+class Seeker extends BaseInventory {
+	public function __construct( GamesPlayer $player ) {
 		parent::__construct( $player, [
 			new IronSword(),
 			new Carrot( 0, 5 ),

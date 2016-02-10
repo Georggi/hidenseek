@@ -17,8 +17,7 @@ use pocketmine\block\Block;
  * Class HNSSession
  * @package HideNSeek
  */
-class HNSSession extends BaseSession
-{
+class HNSSession extends BaseSession {
 	/** @var bool */
 	private $isHidden;
 	/** @var int */
@@ -28,8 +27,7 @@ class HNSSession extends BaseSession
 	/** @var bool|Block */
 	private $block = false;
 
-	public function __construct( GamesPlayer $player, HNSGame $game, $blockId, $blockMeta )
-	{
+	public function __construct( GamesPlayer $player, HNSGame $game, $blockId, $blockMeta ) {
 		parent::__construct( $player, $game );
 		$this->id = $blockId;
 		$this->meta = $blockMeta;
@@ -39,32 +37,28 @@ class HNSSession extends BaseSession
 	/**
 	 * @return HNSGame
 	 */
-	public function getGame()
-	{
+	public function getGame() {
 		return parent::getGame();
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isBlock()
-	{
+	public function isBlock() {
 		return $this->getBlock()->isVanished();
 	}
 
 	/**
 	 * @return HNSBlock
 	 */
-	public function getBlock()
-	{
+	public function getBlock() {
 		return $this->block;
 	}
 
 	/**
 	 * @param bool $mode
 	 */
-	public function setHidden( $mode )
-	{
+	public function setHidden( $mode ) {
 		$this->isHidden = $mode;
 		if ( $mode ) {
 			$this->getPlayer()->startDisguise( GamesPlayer::DISGUISE_ENTITY_FALLING_BLOCK, [ "TileID" => $this->getID(), "Data" => $this->getMeta() ] );
@@ -79,21 +73,18 @@ class HNSSession extends BaseSession
 	/**
 	 * @return int
 	 */
-	public function getID()
-	{
+	public function getID() {
 		return $this->id;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getMeta()
-	{
+	public function getMeta() {
 		return $this->meta;
 	}
 
-	public function onGameEnd()
-	{
+	public function onGameEnd() {
 		if ( $this->isHidden() ) {
 			$this->getPlayer()->setDataFlag( GamesPlayer::DATA_FLAGS, GamesPlayer::DATA_FLAG_INVISIBLE, false );
 			$this->getPlayer()->setDataProperty( GamesPlayer::DATA_SHOW_NAMETAG, GamesPlayer::DATA_TYPE_BYTE, true );
@@ -105,8 +96,7 @@ class HNSSession extends BaseSession
 	/**
 	 * @return bool
 	 */
-	public function isHidden()
-	{
+	public function isHidden() {
 		return $this->isHidden;
 	}
 }

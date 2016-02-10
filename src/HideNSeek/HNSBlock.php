@@ -5,8 +5,7 @@ use GamesCore\GamesPlayer;
 use pocketmine\block\Air;
 use pocketmine\block\Block;
 
-class HNSBlock extends Block
-{
+class HNSBlock extends Block {
 	/** @var GamesPlayer */
 	private $owner;
 	/** @var bool */
@@ -14,8 +13,7 @@ class HNSBlock extends Block
 	/** @var Air */
 	private $tempBlock;
 
-	public function __construct( $id, $meta, GamesPlayer $player )
-	{
+	public function __construct( $id, $meta, GamesPlayer $player ) {
 		parent::__construct( $id, $meta );
 		$this->owner = $player;
 		$this->tempBlock = new Air();
@@ -24,8 +22,7 @@ class HNSBlock extends Block
 	/**
 	 * This is an example of "Optimized code" since PocketMine always tick blocks using this function...
 	 */
-	public function onUpdate()
-	{
+	public function onUpdate() {
 		if ( $this->isVanished() === $this->getOwner()->isSneaking() ) { // Inverted check... Vanished = !Sneaking, !Vanished = Sneaking
 			$this->setVanished( !$this->getOwner()->isSneaking() );
 		}
@@ -38,20 +35,17 @@ class HNSBlock extends Block
 		}
 	}
 
-	public function isVanished()
-	{
+	public function isVanished() {
 		return $this->vanished;
 	}
 
-	public function setVanished( $value = true )
-	{
+	public function setVanished( $value = true ) {
 		$this->vanished = $value;
 		$this->getOwner()->stopDisguise( true, false );
 		$this->getLevel()->setBlock( $this, $value ? $this->tempBlock : $this, true, false );
 	}
 
-	public function getOwner()
-	{
+	public function getOwner() {
 		return $this->owner;
 	}
 }

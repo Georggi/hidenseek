@@ -24,17 +24,14 @@ use pocketmine\command\ConsoleCommandSender;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 
-class sethnsspawnpoint extends BaseCommand
-{
+class sethnsspawnpoint extends BaseCommand {
 
-	public function __construct( Loader $plugin )
-	{
+	public function __construct( Loader $plugin ) {
 		parent::__construct( $plugin, "sethnsspawnpoint", "Command for map-making!!! Creates file for plugin spawnpoints", "/sethnsspawnpoint [Type of player]", [ "sethnssp" ] );
 		$this->setPermission( "hns.sethnssp" );
 	}
 
-	public function execute( CommandSender $sender, $alias, array $args )
-	{
+	public function execute( CommandSender $sender, $alias, array $args ) {
 		if ( !$sender->hasPermission( "hns.sethnssp" ) ) {
 			$sender->sendMessage( "You don't have permission to use this command!" );
 			return false;

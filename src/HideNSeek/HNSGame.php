@@ -27,8 +27,7 @@ use pocketmine\math\Vector3;
 use pocketmine\tile\Sign;
 use pocketmine\utils\TextFormat;
 
-class HNSGame extends BaseMiniGame
-{
+class HNSGame extends BaseMiniGame {
 	/** @var GamesPlayer */
 	private $lastHider;
 	/** @var Vector3 */
@@ -51,8 +50,7 @@ class HNSGame extends BaseMiniGame
 		Item::IRON_SWORD => 6,
 	];
 
-	public function __construct( $core, $plugin, Level $level, Sign $sign )
-	{
+	public function __construct( $core, $plugin, Level $level, Sign $sign ) {
 		// Loader, MinigameProject, Level, Sign, maximum players, minimum players, time of game, number of rounds, ??, game end message
 		parent::__construct( $core, $plugin, $level, $sign, 10, 2, 5, 1, false );
 	}
@@ -60,13 +58,11 @@ class HNSGame extends BaseMiniGame
 	/**
 	 * @return \GamesCore\BaseFiles\MiniGameProject
 	 */
-	public function getPlugin()
-	{
+	public function getPlugin() {
 		return parent::getPlugin();
 	}
 
-	public function onGameStart()
-	{
+	public function onGameStart() {
 		//$this->SeekersSpawnPoint = json_decode(stream_get_contents($resource = $this->getPlugin()->getResource($this->getLevel()->getName() . ".seekerspawn")));
 		//fclose($resource);
 		//$this->HidersSpawnPoint = json_decode(stream_get_contents($resource = $this->getPlugin()->getResource($this->getLevel()->getName() . ".hiderspawn")));
@@ -86,13 +82,11 @@ class HNSGame extends BaseMiniGame
 	 * @param GamesPlayer $player
 	 * @return bool|HNSSession
 	 */
-	public function getSession( GamesPlayer $player )
-	{
+	public function getSession( GamesPlayer $player ) {
 		return parent::getSession( $player );
 	}
 
-	public function onGameEnd()
-	{
+	public function onGameEnd() {
 		/** @var GamesPlayer[] $Hiders */
 		$Hiders = [ ];
 		/** @var GamesPlayer[] $Seekers */
@@ -140,24 +134,21 @@ class HNSGame extends BaseMiniGame
 	/**
 	 * @return HNSSession[]
 	 */
-	public function getAllSessions()
-	{
+	public function getAllSessions() {
 		return parent::getAllSessions();
 	}
 
 	/**
 	 * @param GamesPlayer $player
 	 */
-	public function onPlayerJoin( GamesPlayer $player )
-	{
+	public function onPlayerJoin( GamesPlayer $player ) {
 	}
 
 	/**
 	 * @param GamesPlayer $player
 	 * @param Block $block
 	 */
-	public function selectBlock( GamesPlayer $player, Block $block )
-	{
+	public function selectBlock( GamesPlayer $player, Block $block ) {
 		$this->blockSelection[ $player->getId() ] = [ $block->getId(), $block->getDamage() ];
 	}
 
@@ -165,8 +156,7 @@ class HNSGame extends BaseMiniGame
 	 * @param GamesPlayer $player
 	 * @return HNSSession
 	 */
-	public function generateSession( GamesPlayer $player )
-	{
+	public function generateSession( GamesPlayer $player ) {
 		$block = isset( $this->blockSelection[ $player->getId() ] ) ? $this->blockSelection[ $player->getId() ] : explode( ":", $this->getMapBlocks()[ array_rand( $this->getMapBlocks() ) ] );
 		$blockId = $block[ 0 ];
 		$blockMeta = $block[ 1 ];
@@ -177,8 +167,7 @@ class HNSGame extends BaseMiniGame
 	/**
 	 * @return array
 	 */
-	public function getMapBlocks()
-	{
+	public function getMapBlocks() {
 		return $this->blocks;
 	}
 
@@ -186,8 +175,7 @@ class HNSGame extends BaseMiniGame
 	 * @param GamesPlayer $player
 	 * @return bool|Block
 	 */
-	public function getBlock( GamesPlayer $player )
-	{
+	public function getBlock( GamesPlayer $player ) {
 		return $this->getSession( $player )->getBlock();
 	}
 
@@ -195,16 +183,14 @@ class HNSGame extends BaseMiniGame
 	 * @param GamesPlayer $player
 	 * @return bool
 	 */
-	public function isHidden( GamesPlayer $player )
-	{
+	public function isHidden( GamesPlayer $player ) {
 		return $this->getSession( $player )->isHidden();
 	}
 
 	/**
 	 * @param GamesPlayer $player
 	 */
-	public function setSeeker( GamesPlayer $player )
-	{
+	public function setSeeker( GamesPlayer $player ) {
 		$this->getSession( $player )->setHidden( false );
 	}
 
@@ -212,8 +198,7 @@ class HNSGame extends BaseMiniGame
 	 * @param Item $item
 	 * @param GamesPlayer $player
 	 */
-	public function sendDamageToPlayer( Item $item, GamesPlayer $player )
-	{
+	public function sendDamageToPlayer( Item $item, GamesPlayer $player ) {
 		$damage = [
 			EntityDamageEvent::MODIFIER_BASE => isset( $this->damageTable[ $item->getId() ] ) ? $this->damageTable[ $item->getId() ] : 1
 		];
@@ -235,8 +220,7 @@ class HNSGame extends BaseMiniGame
 	 *
 	 * @priority MONITOR
 	 */
-	public function onPlayerInteract( PlayerInteractEvent $event )
-	{
+	public function onPlayerInteract( PlayerInteractEvent $event ) {
 		if ( $this->validEvent( $event ) ) {
 			/** @var GamesPlayer $player */
 			$player = $event->getPlayer();
@@ -251,8 +235,7 @@ class HNSGame extends BaseMiniGame
 	/**
 	 * @param PlayerMoveEvent $event
 	 */
-	public function onPlayerMove( PlayerMoveEvent $event )
-	{
+	public function onPlayerMove( PlayerMoveEvent $event ) {
 		if ( $this->validEvent( $event ) ) {
 			/** @var GamesPlayer $player */
 			$player = $event->getPlayer();
@@ -266,8 +249,7 @@ class HNSGame extends BaseMiniGame
 	 * @param EntityDamageEvent $event
 	 * @priority HIGHEST
 	 */
-	public function onEntityDamage( EntityDamageEvent $event )
-	{
+	public function onEntityDamage( EntityDamageEvent $event ) {
 		if ( $this->validEvent( $event ) && $event instanceof EntityDamageByEntityEvent ) {
 			/** @var GamesPlayer $damager */
 			$damager = $event->getDamager();
@@ -284,8 +266,7 @@ class HNSGame extends BaseMiniGame
 	/**
 	 * @param PlayerRespawnEvent $event
 	 */
-	public function onPlayerRespawn( PlayerRespawnEvent $event )
-	{
+	public function onPlayerRespawn( PlayerRespawnEvent $event ) {
 		if ( $this->validEvent( $event ) ) {
 			$event->setRespawnPosition( $this->getRandomSpawnPoint() );
 			/** @var GamesPlayer $player */
@@ -301,8 +282,7 @@ class HNSGame extends BaseMiniGame
 	/**
 	 * @param PlayerQuitEvent $event
 	 */
-	public function onPlayerQuit( PlayerQuitEvent $event )
-	{
+	public function onPlayerQuit( PlayerQuitEvent $event ) {
 		if ( $this->validEvent( $event ) ) {
 			/** @var GamesPlayer $player */
 			$player = $event->getPlayer();
@@ -312,8 +292,7 @@ class HNSGame extends BaseMiniGame
 		}
 	}
 
-	public function onPlayerSneak( PlayerToggleSneakEvent $event )
-	{
+	public function onPlayerSneak( PlayerToggleSneakEvent $event ) {
 		if ( $this->validEvent( $event ) ) {
 			/** @var GamesPlayer $player */
 			$player = $event->getPlayer();

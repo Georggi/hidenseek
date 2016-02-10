@@ -15,10 +15,8 @@ use HideNSeek\Commands\sethnsspawnpoint;
 use pocketmine\level\Level;
 use pocketmine\tile\Sign;
 
-class Loader extends MiniGameProject
-{
-	public function onEnable()
-	{
+class Loader extends MiniGameProject {
+	public function onEnable() {
 		if ( !is_dir( $this->getDataFolder() ) ) {
 			mkdir( $this->getDataFolder() );
 		}
@@ -37,16 +35,14 @@ class Loader extends MiniGameProject
 	/**
 	 * @return string
 	 */
-	public function updaterName()
-	{
+	public function updaterName() {
 		return "HideNSeek";
 	}
 
 	/**
 	 * @return array
 	 */
-	public function getTranslations()
-	{
+	public function getTranslations() {
 		return [ ];
 	}
 
@@ -64,8 +60,7 @@ class Loader extends MiniGameProject
 	 * @param Sign $sign
 	 * @return HNSGame
 	 */
-	public function generateMiniGame( Core $core, Level $level, Sign $sign )
-	{
+	public function generateMiniGame( Core $core, Level $level, Sign $sign ) {
 		return new HNSGame( $core, $this, $level, $sign );
 	}
 }
